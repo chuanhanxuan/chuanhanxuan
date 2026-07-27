@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="传涵轩">
+<meta name="theme-color" content="#fff0f5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>传涵轩</title>
+<style>
+  :root {
+    --bg: transparent;
+    --panel: rgba(255, 255, 255, 0.88);
+    --panel-2: rgba(255, 255, 255, 0.72);
+    --border: rgba(255, 182, 193, 0.35);
+    --text: #3d2c32;
+    --text-dim: #7a6b70;
+    --primary: #ff7eb3;
+    --primary-dim: #ff6b9d;
+    --success: #4ade80;
+    --warn: #f59e0b;
+    --danger: #f47272;
+    --pink: #ff69b4;
+    --purple: #c084fc;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --tab-h: 62px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overscroll-behavior: none; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #fff0f5 url('bg_pink.jpg') center top / cover fixed no-repeat;
+    color: #3d2c32;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+  .app {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+  }
+
+  /* ===== 顶部状态栏 ===== */
+  .topbar {
+    flex-shrink: 0;
+    padding: 12px 18px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: relative;
+    z-index: 10;
+  }
+  .topbar-title {
+    font-size: 18px;
+    font-weight: 700;
+    flex: 1;
+    letter-spacing: 1px;
+  }
+  .topbar-title .accent {
+    background: linear-gradient(135deg, #ff6b9d 0%, #c084fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .topbar-date {
+    font-size: 11px;
+    color: #9c6b7a;
+    text-align: right;
+    line-height: 1.4;
+  }
+
+  /* ===== 页面容器 ===== */
+  .pages {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  .page {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px 14px 20px;
+    display: none;
+    animation: slideIn 0.28s ease;
+  }
+  .page.active { display: block; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(8px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ===== 底部 Tab 栏 ===== */
+  .tabbar {
+    flex-shrink: 0;
+    height: var(--tab-h);
+    display: flex;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: #9c6b7a;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s;
+    position: relative;
+  }
+  .tab.active { color: var(--pink); }
+  .tab-icon { font-size: 22px; line-height: 1; }
+  .tab-label { font-size: 10px; font-weight: 500; }
+  .tab .badge {
+    position: absolute;
+    top: 8px;
+    right: calc(50% - 24px);
+    background: var(--danger);
+    color: #fff;
+    font-size: 9px;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid var(--bg);
+  }
+  .tab .badge.show { display: flex; }
+
+  /* ===== 通用组件 ===== */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-title .actions { margin-left: auto; }
+
+  .btn {
+    background: var(--panel-2);
+    color: #3d2c32;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.12s;
+    font-family: inherit;
+    border: none;
+    outline: none;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn-primary { background: var(--primary-dim); color: #fff; }
+  .btn-primary:active { background: var(--primary); }
+  .btn-success { background: #16a34a; color: #fff; }
+  .btn-danger { background: rgba(248,113,113,0.12); color: var(--danger); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+  .btn-block { width: 100%; padding: 13px; font-size: 15px; }
+
+  /* ===== 账单页 ===== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+  .stat-card.c1::before { background: var(--primary); }
+  .stat-card.c2::before { background: var(--warn); }
+  .stat-card.c3::before { background: var(--success); }
+  .stat-card.c4::before { background: var(--pink); }
+  .stat-label { font-size: 11px; color: #8a5b6a; margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 700; }
+  .stat-value .unit { font-size: 12px; color: #9c6b7a; font-weight: 400; margin-left: 3px; }
+  .stat-hint { font-size: 10px; color: #9c6b7a; margin-top: 4px; }
+
+  /* 存钱卡片 */
+  .save-card {
+    background: linear-gradient(135deg, rgba(74,222,128,0.08) 0%, rgba(34,197,94,0.04) 100%);
+    border: 1px solid rgba(74,222,128,0.2);
+    text-align: center;
+  }
+  .save-ring {
+    width: 130px; height: 130px;
+    margin: 6px auto 12px;
+    position: relative;
+  }
+  .save-ring svg { transform: rotate(-90deg); }
+  .save-ring .track { fill: none; stroke: rgba(255, 182, 193, 0.5); stroke-width: 9; }
+  .save-ring .progress { fill: none; stroke: url(#saveGrad); stroke-width: 9; stroke-linecap: round; transition: stroke-dashoffset 0.6s; }
+  .save-ring .center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .save-ring .num { font-size: 24px; font-weight: 700; color: var(--success); }
+  .save-ring .lbl { font-size: 10px; color: #9c6b7a; }
+  .save-msg { font-size: 13px; color: #9c6b7a; margin-bottom: 14px; line-height: 1.6; }
+  .save-msg strong { color: #2ea94a; }
+  .streak-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(251,191,36,0.15);
+    color: #d97706;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-top: 10px;
+  }
+
+  /* 账单列表 */
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .filter-bar input, .filter-bar select {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid var(--border);
+    color: #3d2c32;
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    min-width: 0;
+  }
+  .filter-bar input:focus, .filter-bar select:focus { outline: none; border-color: var(--primary); }
+
+  .bill-list { display: flex; flex-direction: column; gap: 8px; }
+  .bill-item {
+    background: var(--panel-2);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .bill-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .bill-icon.food { background: rgba(74,222,128,0.12); }
+  .bill-icon.transport { background: rgba(108,140,255,0.12); }
+  .bill-icon.shop { background: rgba(244,114,182,0.12); }
+  .bill-icon.fun { background: rgba(167,139,250,0.12); }
+  .bill-icon.other { background: rgba(251,191,36,0.12); }
+  .bill-info { flex: 1; min-width: 0; }
+  .bill-place { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bill-meta { font-size: 11px; color: #9c6b7a; margin-top: 2px; }
+  .bill-amount { font-size: 15px; font-weight: 700; color: var(--danger); flex-shrink: 0; }
+  .bill-del {
+    background: none; border: none; color: #9c6b7a;
+    font-size: 18px; padding: 4px 8px; cursor: pointer;
+  }
+  .bill-del:active { color: var(--danger); }
+  .empty-tip { text-align: center; color: #9c6b7a; padding: 30px 0; font-size: 13px; }
+
+  /* ===== 赵露思页 ===== */
+  .hero-banner {
+    background: linear-gradient(135deg, #ffd1e3 0%, #ffb6c1 40%, #ffc0cb 70%, #ffdde5 100%);
+    border-radius: 16px;
+    padding: 0;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+    min-height: 200px;
+    display: flex;
+    align-items: flex-end;
+  }
+  .hero-banner .portrait {
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 170px;
+    display: flex; align-items: flex-end; justify-content: flex-end;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .hero-banner .portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 0 16px 16px 0;
+    mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.4) 30%, black 70%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.4) 30%, black 70%);
+  }
+  .hero-banner .hero-overlay {
+    position: relative;
+    z-index: 2;
+    padding: 22px 20px 18px;
+    background: linear-gradient(90deg, rgba(255, 240, 245, 0.95) 30%, rgba(255, 228, 235, 0.75) 55%, transparent 100%);
+    width: 100%;
+    border-radius: 0 0 0 16px;
+  }
+  .hero-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; color: #4a2033; }
+  .hero-sub { font-size: 12px; color: #7a4b5a; opacity: 0.95; line-height: 1.6; max-width: 70%; }
+  .hero-tags { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .hero-tag {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(4px);
+    color: #9c3a6b;
+  }
+
+  .section-title { font-size: 15px; font-weight: 600; margin: 18px 0 12px; display: flex; align-items: center; gap: 8px; color: #5d2a3d; }
+  .section-title::before { content: ''; width: 3px; height: 14px; background: var(--pink); border-radius: 2px; }
+
+  .platform-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    margin-bottom: 10px;
+    transition: all 0.15s;
+  }
+  .platform-card:active { transform: scale(0.98); border-color: var(--pink); }
+  .platform-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .platform-logo {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .platform-logo.dy { background: linear-gradient(135deg, #000 0%, #1a1a1a 100%); }
+  .platform-logo.xhs { background: linear-gradient(135deg, #ff2442 0%, #ff6080 100%); }
+  .platform-name { font-size: 15px; font-weight: 600; }
+  .platform-id { font-size: 11px; color: #9c6b7a; margin-top: 2px; }
+  .platform-desc { font-size: 12px; color: #7a4b5a; line-height: 1.6; }
+  .platform-stat { display: flex; gap: 16px; margin-top: 10px; }
+  .platform-stat .s-item { font-size: 11px; color: #9c6b7a; }
+  .platform-stat .s-item strong { color: #3d2c32; font-size: 14px; display: block; }
+  .arrow-go { color: #c49aa6; font-size: 18px; margin-left: auto; }
+
+  .endorse-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .endorse-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .endorse-card:active { transform: scale(0.97); border-color: var(--pink); }
+
+  /* OLLY 提醒横幅 */
+  .olly-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(255, 182, 193, 0.3) 0%, rgba(255, 240, 245, 0.5) 100%);
+    border: 1px solid rgba(255, 182, 193, 0.45);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .olly-banner:active { transform: scale(0.98); border-color: var(--pink); }
+  .olly-avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6b9d 0%, #ffc2d1 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .olly-text { flex: 1; }
+  .olly-title { font-size: 13px; font-weight: 600; color: #5d2a3d; margin-bottom: 2px; }
+  .olly-sub { font-size: 12px; color: #9c6b7a; }
+  .olly-arrow { color: #c49aa6; font-size: 22px; margin-left: 4px; }
+  .endorse-brand { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .endorse-cat { font-size: 10px; color: #9c6b7a; line-height: 1.4; }
+  .endorse-tag {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(244,114,182,0.15);
+    color: var(--pink);
+  }
+
+  .brand-card {
+    background: linear-gradient(135deg, rgba(244,114,182,0.1) 0%, rgba(167,139,250,0.08) 100%);
+    border: 1px solid rgba(244,114,182,0.3);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .brand-card-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #ff4a9c; }
+  .brand-card-desc { font-size: 12px; color: #7a4b5a; line-height: 1.7; }
+
+  /* ROSYDOEDIAN 品牌店铺按钮 */
+  .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .shop-btn {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 12px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .shop-btn:active { transform: scale(0.96); border-color: var(--pink); }
+  .shop-btn .shop-icon { font-size: 24px; }
+  .shop-btn .shop-name { font-size: 12px; font-weight: 600; }
+  .shop-btn .shop-tag { font-size: 10px; color: #9c6b7a; }
+  .shop-btn.live { background: linear-gradient(135deg, rgba(248,113,113,0.12) 0%, rgba(244,114,182,0.08) 100%); border-color: rgba(248,113,113,0.3); }
+  .shop-btn.live .shop-name { color: var(--danger); }
+
+  /* 实时热点 */
+  .live-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 12px;
+  }
+  .live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74,222,128,0.5); }
+    50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(74,222,128,0); }
+  }
+  .live-text { color: #2ea94a; font-weight: 600; }
+  .live-time { color: #9c6b7a; margin-left: auto; }
+  .live-refresh {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--border);
+    color: #3d2c32;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .live-refresh:active { transform: scale(0.95); }
+  .live-source-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .source-tab {
+    flex: 1;
+    padding: 8px;
+    border-radius: 9px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    text-align: center;
+    font-size: 12px;
+    color: #9c6b7a;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .source-tab.active { background: var(--primary-dim); color: #fff; border-color: var(--primary-dim); }
+
+  /* 新品上新 */
+  .newprod-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    transition: all 0.15s;
+  }
+  .newprod-card:active { transform: scale(0.98); border-color: var(--pink); }
+  .newprod-thumb {
+    width: 76px; height: 76px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2a1d4e 0%, #4a2d6e 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    flex-shrink: 0;
+  }
+  .newprod-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+  .newprod-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; line-height: 1.3; color: #5d2a3d; }
+  .newprod-desc { font-size: 11px; color: #9c6b7a; margin-bottom: 6px; line-height: 1.4; }
+  .newprod-bottom { display: flex; align-items: center; gap: 8px; }
+  .newprod-price { font-size: 15px; font-weight: 700; color: var(--pink); }
+  .newprod-price .old { font-size: 11px; color: #9c6b7a; text-decoration: line-through; font-weight: 400; margin-left: 4px; }
+  .newprod-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(244,114,182,0.15);
+    color: var(--pink);
+    margin-left: auto;
+  }
+
+  .hot-item {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 15px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .hot-item:active { transform: scale(0.98); }
+  .hot-rank { font-size: 17px; font-weight: 700; color: var(--pink); min-width: 22px; }
+  .hot-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; line-height: 1.4; color: #5d2a3d; }
+  .hot-meta { font-size: 10px; color: #9c6b7a; }
+
+  /* ===== 学车页 ===== */
+  .drive-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 4px;
+  }
+  .drive-tab {
+    flex: 1;
+    padding: 9px 8px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #9c6b7a;
+    text-align: center;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .drive-tab.active {
+    background: var(--primary-dim);
+    color: #fff;
+  }
+
+  .tip-box {
+    background: linear-gradient(135deg, rgba(255, 182, 193, 0.2) 0%, rgba(255, 240, 245, 0.3) 100%);
+    border: 1px solid rgba(255, 182, 193, 0.4);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #9c6b7a;
+  }
+  .tip-box strong { color: #ff6b9d; }
+
+  .video-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: all 0.15s;
+  }
+  .video-card:active { transform: scale(0.98); border-color: var(--primary); }
+  .video-thumb {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: linear-gradient(135deg, #1a1d26 0%, #2a2f3a 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    position: relative;
+  }
+  .video-thumb::after {
+    content: '▶';
+    position: absolute;
+    color: #fff;
+    font-size: 24px;
+    background: rgba(0,0,0,0.55);
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    padding-left: 3px;
+  }
+  .video-info { padding: 12px 14px; }
+  .video-title { font-size: 14px; font-weight: 500; margin-bottom: 8px; line-height: 1.4; color: #5d2a3d; }
+  .video-meta { display: flex; gap: 10px; font-size: 11px; color: #9c6b7a; align-items: center; }
+  .video-meta .platform {
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10px;
+  }
+  .video-meta .platform.bili { background: rgba(251,113,133,0.15); color: #fb7299; }
+  .video-meta .platform.dy { background: rgba(255,255,255,0.1); color: #fff; }
+  .video-meta .platform.other { background: rgba(108,140,255,0.15); color: var(--primary); }
+  .video-tag {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--primary);
+    background: rgba(108,140,255,0.12);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  /* ===== 底部弹层（添加账单） ===== */
+  .sheet-mask {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .sheet-mask.show { display: block; opacity: 1; }
+  .sheet {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 18px 18px 0 0;
+    padding: 20px 18px calc(20px + var(--safe-bottom));
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    z-index: 101;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .sheet-mask.show .sheet { transform: translateY(0); }
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: rgba(255, 182, 193, 0.6);
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
+  .sheet-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .form-field { margin-bottom: 12px; }
+  .form-field label { display: block; font-size: 12px; color: #8a5b6a; margin-bottom: 6px; }
+  .form-field input, .form-field select {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid var(--border);
+    color: #3d2c32;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 15px;
+    font-family: inherit;
+  }
+  .form-field input:focus, .form-field select:focus { outline: none; border-color: var(--primary); }
+  .form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sheet-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .sheet-actions .btn { flex: 1; }
+
+  /* FAB 浮动按钮 */
+  .fab {
+    position: fixed;
+    right: 18px;
+    bottom: calc(var(--tab-h) + var(--safe-bottom) + 14px);
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--primary-dim);
+    color: #fff;
+    border: none;
+    font-size: 26px;
+    box-shadow: 0 6px 20px rgba(74,108,255,0.4);
+    cursor: pointer;
+    z-index: 50;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s;
+  }
+  .fab:active { transform: scale(0.9); }
+  .fab.show { display: flex; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: calc(var(--tab-h) + var(--safe-bottom) + 30px);
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid var(--border);
+    color: #3d2c32;
+    padding: 12px 22px;
+    border-radius: 12px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 200;
+    pointer-events: none;
+    max-width: 90vw;
+    text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: var(--success); }
+  .toast.warn { border-color: var(--warn); }
+
+  /* PWA 安装提示 */
+  .install-bar {
+    background: linear-gradient(135deg, rgba(255, 182, 193, 0.25) 0%, rgba(255, 240, 245, 0.3) 100%);
+    border: 1px solid rgba(255, 182, 193, 0.5);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .install-bar.show { display: flex; }
+  .install-bar .txt { flex: 1; color: #7a4b5a; }
+  .install-bar .txt strong { color: #5d2a3d; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- 顶部状态栏 -->
+  <div class="topbar">
+    <div class="topbar-title"><span class="accent">传涵轩</span></div>
+    <div class="topbar-date" id="topDate"></div>
+  </div>
+
+  <!-- 页面区 -->
+  <div class="pages">
+    <!-- ===== 账单页 ===== -->
+    <section class="page active" id="page-bill">
+      <div class="install-bar" id="installBar">
+        <div class="txt">📱 <strong>添加到主屏幕</strong>，像 App 一样使用</div>
+        <button class="btn btn-sm btn-primary" id="installBtn">安装</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card c2">
+          <div class="stat-label">今日支出</div>
+          <div class="stat-value"><span id="todaySpend">0</span><span class="unit">元</span></div>
+          <div class="stat-hint" id="todayHint">今天还没有支出</div>
+        </div>
+        <div class="stat-card c1">
+          <div class="stat-label">本月支出</div>
+          <div class="stat-value"><span id="monthSpend">0</span><span class="unit">元</span></div>
+          <div class="stat-hint" id="monthHint">0 笔</div>
+        </div>
+        <div class="stat-card c3">
+          <div class="stat-label">累计存款</div>
+          <div class="stat-value"><span id="totalSave">0</span><span class="unit">元</span></div>
+          <div class="stat-hint" id="saveHint">目标 3650 元</div>
+        </div>
+        <div class="stat-card c4">
+          <div class="stat-label">连续存钱</div>
+          <div class="stat-value"><span id="streakDays">0</span><span class="unit">天</span></div>
+          <div class="stat-hint" id="streakHint">开启存钱之旅</div>
+        </div>
+      </div>
+
+      <!-- 存钱卡片 -->
+      <div class="card save-card">
+        <div class="card-title">🐷 每日存 10 元</div>
+        <div class="save-ring">
+          <svg width="130" height="130">
+            <defs>
+              <linearGradient id="saveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#4ade80"/>
+                <stop offset="100%" stop-color="#34d399"/>
+              </linearGradient>
+            </defs>
+            <circle class="track" cx="65" cy="65" r="55"/>
+            <circle class="progress" id="saveProgress" cx="65" cy="65" r="55"
+              stroke-dasharray="345.58" stroke-dashoffset="345.58"/>
+          </svg>
+          <div class="center">
+            <div class="num" id="ringNum">0%</div>
+            <div class="lbl">今日进度</div>
+          </div>
+        </div>
+        <div class="save-msg" id="saveMsg">
+          今日还未存钱<br>
+          <strong>坚持每天存 10 元</strong>，一年就是 3650 元
+        </div>
+        <button class="btn btn-success btn-block" onclick="doDailySave()" id="saveBtn">✓ 今日存 10 元</button>
+        <div id="streakDisplay"></div>
+      </div>
+
+      <!-- 账单列表 -->
+      <div class="card">
+        <div class="card-title">
+          📋 消费记录
+          <div class="actions">
+            <button class="btn btn-sm" onclick="resetFilter()">重置</button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <input type="date" id="filterDate">
+          <select id="filterCat">
+            <option value="">全部分类</option>
+            <option value="food">🍔 餐饮</option>
+            <option value="transport">🚌 交通</option>
+            <option value="shop">🛍 购物</option>
+            <option value="fun">🎮 娱乐</option>
+            <option value="other">📦 其他</option>
+          </select>
+        </div>
+        <div class="bill-list" id="billList">
+          <div class="empty-tip">还没有消费记录<br>点击右下角 + 记一笔</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 赵露思页 ===== -->
+    <section class="page" id="page-rosy">
+      <div class="hero-banner">
+        <div class="portrait">
+          <img src="zhaolusi_portrait.jpg" alt="赵露思">
+        </div>
+        <div class="hero-overlay">
+          <div class="hero-title">赵露思 Zhao Lusi</div>
+          <div class="hero-sub">1998 年生 · 演员/歌手 · "小红书一姐"<br>2026 年已拿下 <strong style="color:#f8bbd0">17 个</strong>新代言，商业价值稳居 95 后女演员第一梯队</div>
+          <div class="hero-tags">
+            <span class="hero-tag">🌹 95后顶流</span>
+            <span class="hero-tag">💎 17个代言</span>
+            <span class="hero-tag">🛍️ 双品牌主理人</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">📱 官方社交平台</div>
+      <a class="platform-card" href="https://www.douyin.com/user/MS4wLjABAAAAISMJwLxAdIyVnQkkPT9Rv1PRzBraeitmytvKlmZWhmE" target="_blank">
+        <div class="platform-head">
+          <div class="platform-logo dy">🎵</div>
+          <div>
+            <div class="platform-name">抖音</div>
+            <div class="platform-id">@赵露思的抖音 · 1109Rosy</div>
+          </div>
+          <span class="arrow-go">›</span>
+        </div>
+        <div class="platform-desc">官方抖音账号，日常 vlog、工作花絮、品牌合作</div>
+        <div class="platform-stat">
+          <div class="s-item"><strong>4400万+</strong>粉丝</div>
+          <div class="s-item"><strong>仅关注1人</strong></div>
+        </div>
+      </a>
+      <a class="platform-card" href="https://www.xiaohongshu.com/search_result?keyword=赵露思" target="_blank">
+        <div class="platform-head">
+          <div class="platform-logo xhs">📕</div>
+          <div>
+            <div class="platform-name">小红书</div>
+            <div class="platform-id">搜索「赵露思」</div>
+          </div>
+          <span class="arrow-go">›</span>
+        </div>
+        <div class="platform-desc">首位粉丝破千万的明星主播，美妆、穿搭分享</div>
+        <div class="platform-stat">
+          <div class="s-item"><strong>2200万+</strong>粉丝</div>
+          <div class="s-item"><strong>#1</strong>明星主播</div>
+        </div>
+      </a>
+
+      <div class="section-title">💎 品牌代言（2026 实时）
+        <button class="live-refresh" style="margin-left:auto" onclick="refreshEndorse()">↻ 刷新</button>
+      </div>
+      <div class="endorse-grid" id="endorseGrid">
+        <div class="endorse-card" onclick="window.open('https://www.douyin.com/search/赵露思宝格丽代言','_blank')">
+          <div class="endorse-brand">宝格丽</div>
+          <div class="endorse-cat">奢侈品 · 品牌代言人</div>
+          <span class="endorse-tag">顶奢</span>
+        </div>
+        <div class="endorse-card" onclick="window.open('https://www.douyin.com/search/赵露思周大福代言','_blank')">
+          <div class="endorse-brand">周大福</div>
+          <div class="endorse-cat">珠宝 · 全球品牌代言人</div>
+          <span class="endorse-tag">2026.7.17 官宣</span>
+        </div>
+        <div class="endorse-card" onclick="window.open('https://www.douyin.com/search/赵露思JORYA代言','_blank')">
+          <div class="endorse-brand">JORYA</div>
+          <div class="endorse-cat">高端女装 · 品牌代言人</div>
+          <span class="endorse-tag">首登大秀</span>
+        </div>
+        <div class="endorse-card" onclick="window.open('https://www.douyin.com/search/赵露思OLLY代言','_blank')">
+          <div class="endorse-brand">OLLY</div>
+          <div class="endorse-cat">营养健康 · 品牌代言人</div>
+          <span class="endorse-tag">2026.2.25 官宣</span>
+        </div>
+        <div class="endorse-card" onclick="window.open('https://www.douyin.com/search/赵露思茉寻代言','_blank')">
+          <div class="endorse-brand">茉寻</div>
+          <div class="endorse-cat">轻户外防晒 · 全球代言人</div>
+          <span class="endorse-tag">防晒衣</span>
+        </div>
+        <div class="endorse-card" onclick="window.open('https://www.douyin.com/search/赵露思代言2026','_blank')">
+          <div class="endorse-brand">+ 更多代言</div>
+          <div class="endorse-cat">查看全部 17 个代言</div>
+          <span class="endorse-tag">实时</span>
+        </div>
+      </div>
+
+      <!-- OLLY 提醒横幅 -->
+      <div class="olly-banner" onclick="window.open('https://www.douyin.com/search/赵露思OLLY','_blank')">
+        <div class="olly-avatar">🌸</div>
+        <div class="olly-text">
+          <div class="olly-title">露思提醒你</div>
+          <div class="olly-sub">记得每天吃两粒 OLLY 💊</div>
+        </div>
+        <span class="olly-arrow">›</span>
+      </div>
+
+      <div class="brand-card">
+        <div class="brand-card-title">💄 ROSE AMIGO · 个人美妆品牌</div>
+        <div class="brand-card-desc">2026 年赵露思在澳门演唱会推出的个人美妆品牌，首发紫色包装唇膜。定位年轻女性美妆市场，被看好有望成为下一个 Fan Beauty。</div>
+      </div>
+
+      <!-- ROSYDOEDIAN 品牌专区 -->
+      <div class="brand-card" style="background: linear-gradient(135deg, rgba(244,114,182,0.12) 0%, rgba(167,139,250,0.08) 100%); border-color: rgba(244,114,182,0.35);">
+        <div class="brand-card-title">🛍️ ROSYDOEDIAN · 赵露思主理生活方式品牌</div>
+        <div class="brand-card-desc">
+          赵露思主理的创新生活方式品牌，名称融合 Rosy 与爱犬 Doe、点点。主打「人宠共生」理念，产品涵盖水杯、配饰、家居服、潮玩、宠物用品等，多款销量破万。北京荟聚设有慢闪门店。
+        </div>
+        <div class="shop-grid">
+          <a class="shop-btn" href="javascript:void(0)" onclick="openDouyin('ROSYDOEDIAN官方旗舰店')">
+            <div class="shop-icon">🏬</div>
+            <div class="shop-name">官方旗舰店</div>
+            <div class="shop-tag">抖音商城</div>
+          </a>
+          <a class="shop-btn" href="javascript:void(0)" onclick="openDouyin('ROSYDOEDIAN家居生活')">
+            <div class="shop-icon">🛋️</div>
+            <div class="shop-name">家居生活店</div>
+            <div class="shop-tag">家居服/日用</div>
+          </a>
+          <a class="shop-btn" href="javascript:void(0)" onclick="openDouyin('ROSYDOEDIAN箱包配饰')">
+            <div class="shop-icon">👜</div>
+            <div class="shop-name">箱包旗舰店</div>
+            <div class="shop-tag">箱包/配饰</div>
+          </a>
+          <a class="shop-btn live" href="javascript:void(0)" onclick="openDouyin('ROSYDOEDIAN直播')">
+            <div class="shop-icon">🔴</div>
+            <div class="shop-name">抖音直播间</div>
+            <div class="shop-tag">直播带货</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- ROSYDOEDIAN 新品上新 -->
+      <div class="section-title">🆕 ROSYDOEDIAN 新品上新
+        <button class="live-refresh" style="margin-left:auto" onclick="refreshNewProd()">↻ 刷新</button>
+      </div>
+      <div class="live-bar">
+        <span class="live-dot"></span>
+        <span class="live-text" style="color:var(--pink)">实时上新</span>
+        <span class="live-time" id="prodTime">--</span>
+      </div>
+      <div id="newprodList"></div>
+
+      <div class="section-title">🔥 实时热点</div>
+      <div class="live-bar">
+        <span class="live-dot"></span>
+        <span class="live-text">实时更新</span>
+        <span class="live-time" id="liveTime">--</span>
+        <button class="live-refresh" onclick="refreshHot()">↻ 刷新</button>
+      </div>
+      <div class="live-source-tabs">
+        <div class="source-tab active" data-src="douyin" onclick="switchSource('douyin')">抖音</div>
+        <div class="source-tab" data-src="xhs" onclick="switchSource('xhs')">小红书</div>
+        <div class="source-tab" data-src="weibo" onclick="switchSource('weibo')">微博</div>
+      </div>
+      <div id="hotList">
+        <div class="hot-item" onclick="window.open('https://www.douyin.com/search/赵露思','_blank')">
+          <div class="hot-rank">1</div>
+          <div>
+            <div class="hot-title">赵露思出任周大福全球品牌代言人</div>
+            <div class="hot-meta">2026.7.17 · 抖音热搜</div>
+          </div>
+        </div>
+        <div class="hot-item" onclick="window.open('https://www.douyin.com/search/赵露思ROSEAMIGO','_blank')">
+          <div class="hot-rank">2</div>
+          <div>
+            <div class="hot-title">ROSE AMIGO 个人美妆品牌发布</div>
+            <div class="hot-meta">2026.7 · 小红书热议</div>
+          </div>
+        </div>
+        <div class="hot-item" onclick="window.open('https://www.douyin.com/search/赵露思演唱会','_blank')">
+          <div class="hot-rank">3</div>
+          <div>
+            <div class="hot-title">赵露思澳门演唱会</div>
+            <div class="hot-meta">2026.7 · 抖音/小红书</div>
+          </div>
+        </div>
+        <div class="hot-item" onclick="window.open('https://www.xiaohongshu.com/search_result?keyword=赵露思直播','_blank')">
+          <div class="hot-rank">4</div>
+          <div>
+            <div class="hot-title">小红书直播粉丝突破 2200 万</div>
+            <div class="hot-meta">2025.8 · 首位破千万明星主播</div>
+          </div>
+      </div>
+    </section>
+
+    <!-- ===== 学车页 ===== -->
+    <section class="page" id="page-drive">
+      <div class="tip-box">
+        💡 <strong>学车贴士：</strong>科目二重<strong>看点位</strong>，调好座位后视镜是基础；科目三重<strong>细节</strong>，灯光、回头观察要到位；科目四多刷题掌握安全文明常识。
+      </div>
+
+      <div class="drive-tabs">
+        <div class="drive-tab active" data-subject="2">科目二</div>
+        <div class="drive-tab" data-subject="3">科目三</div>
+        <div class="drive-tab" data-subject="4">科目四</div>
+      </div>
+
+      <div id="videoGrid"></div>
+    </section>
+  </div>
+
+  <!-- 底部 Tab 栏 -->
+  <nav class="tabbar">
+    <div class="tab active" data-page="bill">
+      <span class="tab-icon">💰</span>
+      <span class="tab-label">账单</span>
+      <span class="badge" id="billBadge">!</span>
+    </div>
+    <div class="tab" data-page="rosy">
+      <span class="tab-icon">🌹</span>
+      <span class="tab-label">赵露思</span>
+    </div>
+    <div class="tab" data-page="drive">
+      <span class="tab-icon">🚗</span>
+      <span class="tab-label">学车</span>
+    </div>
+  </nav>
+</div>
+
+<!-- 浮动添加按钮 -->
+<button class="fab show" id="fab" onclick="openAddSheet()">+</button>
+
+<!-- 底部弹层：添加账单 -->
+<div class="sheet-mask" id="sheetMask">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📝 记一笔消费</div>
+    <div class="form-field">
+      <label>日期</label>
+      <input type="date" id="fDate">
+    </div>
+    <div class="form-row2">
+      <div class="form-field">
+        <label>金额（元）</label>
+        <input type="number" id="fAmount" placeholder="0.00" step="0.01" min="0" inputmode="decimal">
+      </div>
+      <div class="form-field">
+        <label>分类</label>
+        <select id="fCat">
+          <option value="food">🍔 餐饮</option>
+          <option value="transport">🚌 交通</option>
+          <option value="shop">🛍 购物</option>
+          <option value="fun">🎮 娱乐</option>
+          <option value="other">📦 其他</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field">
+      <label>消费地点</label>
+      <input type="text" id="fPlace" placeholder="如：楼下早餐店、淘宝">
+    </div>
+    <div class="form-field">
+      <label>备注（选填）</label>
+      <input type="text" id="fNote" placeholder="如：午餐、打车上班">
+    </div>
+    <div class="sheet-actions">
+      <button class="btn" onclick="closeAddSheet()">取消</button>
+      <button class="btn btn-primary" id="saveBillBtn" onclick="submitBill()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== 数据存储 =====
+const STORE_KEY = 'chuanhanxuan_bills';
+const SAVE_KEY = 'chuanhanxuan_saves';
+function loadBills() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch { return []; } }
+function saveBills(b) { localStorage.setItem(STORE_KEY, JSON.stringify(b)); }
+function loadSaves() {
+  try { return JSON.parse(localStorage.getItem(SAVE_KEY)) || { total: 0, dates: [], streak: 0, lastDate: null }; }
+  catch { return { total: 0, dates: [], streak: 0, lastDate: null }; }
+}
+function saveSaves(s) { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); }
+
+let bills = loadBills();
+let saves = loadSaves();
+
+const todayStr = () => new Date().toISOString().slice(0,10);
+const monthStr = () => todayStr().slice(0,7);
+const catLabel = { food:'餐饮', transport:'交通', shop:'购物', fun:'娱乐', other:'其他' };
+const catIcon = { food:'🍔', transport:'🚌', shop:'🛍', fun:'🎮', other:'📦' };
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ===== Tab 切换 =====
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.dataset.page).classList.add('active');
+    // FAB 只在账单页显示
+    document.getElementById('fab').classList.toggle('show', tab.dataset.page === 'bill');
+    if (tab.dataset.page === 'bill') renderBill();
+    window.scrollTo(0, 0);
+    document.querySelector('#page-' + tab.dataset.page).scrollTop = 0;
+  });
+});
+
+// ===== 账单渲染 =====
+function renderBill() {
+  const today = todayStr();
+  const month = monthStr();
+  const filterD = document.getElementById('filterDate').value;
+  const filterC = document.getElementById('filterCat').value;
+
+  const todayBills = bills.filter(b => b.date === today);
+  const todaySpend = todayBills.reduce((s,b) => s + b.amount, 0);
+  const monthBills = bills.filter(b => b.date.startsWith(month));
+  const monthSpend = monthBills.reduce((s,b) => s + b.amount, 0);
+
+  document.getElementById('todaySpend').textContent = todaySpend.toFixed(2);
+  document.getElementById('todayHint').textContent = todayBills.length ? `今天 ${todayBills.length} 笔` : '今天还没有支出';
+  document.getElementById('monthSpend').textContent = monthSpend.toFixed(2);
+  document.getElementById('monthHint').textContent = `本月 ${monthBills.length} 笔`;
+  document.getElementById('totalSave').textContent = saves.total.toFixed(2);
+  document.getElementById('saveHint').textContent = saves.total >= 3650 ? '🎉 已达年度目标' : `距 3650 元差 ${(3650 - saves.total).toFixed(0)}`;
+  document.getElementById('streakDays').textContent = saves.streak || 0;
+  document.getElementById('streakHint').textContent = saves.streak ? `最长 ${saves.streak} 天` : '开启存钱之旅';
+
+  // 存钱进度环
+  const savedToday = saves.dates.includes(today);
+  const ringPct = savedToday ? 100 : 0;
+  const circ = 345.58;
+  document.getElementById('saveProgress').setAttribute('stroke-dashoffset', circ - (circ * ringPct / 100));
+  document.getElementById('ringNum').textContent = ringPct + '%';
+
+  const saveMsg = document.getElementById('saveMsg');
+  const saveBtn = document.getElementById('saveBtn');
+  if (savedToday) {
+    saveMsg.innerHTML = `✅ 今日已存 10 元<br><strong>累计 ${saves.total.toFixed(2)} 元</strong>，继续保持`;
+    saveBtn.textContent = '✓ 今日已存';
+    saveBtn.disabled = true;
+    saveBtn.style.opacity = 0.5;
+    document.getElementById('billBadge').classList.remove('show');
+  } else {
+    saveMsg.innerHTML = `今日还未存钱<br><strong>坚持每天存 10 元</strong>，一年 3650 元`;
+    saveBtn.textContent = '✓ 今日存 10 元';
+    saveBtn.disabled = false;
+    saveBtn.style.opacity = 1;
+    document.getElementById('billBadge').classList.add('show');
+  }
+  document.getElementById('streakDisplay').innerHTML = saves.streak
+    ? `<span class="streak-badge">🔥 连续 ${saves.streak} 天</span>` : '';
+
+  // 账单列表
+  let list = bills.slice().sort((a,b) => b.date.localeCompare(a.date) || (b.ts||0)-(a.ts||0));
+  if (filterD) list = list.filter(b => b.date === filterD);
+  if (filterC) list = list.filter(b => b.cat === filterC);
+
+  const el = document.getElementById('billList');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-tip">' + (bills.length ? '没有符合条件的记录' : '还没有消费记录<br>点击右下角 + 记一笔') + '</div>';
+    return;
+  }
+  el.innerHTML = list.map(b => `
+    <div class="bill-item">
+      <div class="bill-icon ${b.cat}">${catIcon[b.cat]}</div>
+      <div class="bill-info">
+        <div class="bill-place">${escapeHtml(b.place || catLabel[b.cat])}</div>
+        <div class="bill-meta">${b.date} · ${escapeHtml(b.note || catLabel[b.cat])}</div>
+      </div>
+      <div class="bill-amount">-${b.amount.toFixed(2)}</div>
+      <button class="bill-del" onclick="delBill(${b.id})">✕</button>
+    </div>
+  `).join('');
+}
+
+// ===== 添加账单 =====
+function openAddSheet() {
+  document.getElementById('fDate').value = todayStr();
+  document.getElementById('fAmount').value = '';
+  document.getElementById('fPlace').value = '';
+  document.getElementById('fNote').value = '';
+  document.getElementById('sheetMask').classList.add('show');
+}
+function closeAddSheet() {
+  document.getElementById('sheetMask').classList.remove('show');
+}
+function submitBill() {
+  const amount = parseFloat(document.getElementById('fAmount').value);
+  const date = document.getElementById('fDate').value;
+  if (!amount || amount <= 0) { showToast('请输入有效金额', 'warn'); return; }
+  if (!date) { showToast('请选择日期', 'warn'); return; }
+  bills.push({
+    id: Date.now(), date, amount,
+    cat: document.getElementById('fCat').value,
+    place: document.getElementById('fPlace').value.trim(),
+    note: document.getElementById('fNote').value.trim(),
+    ts: Date.now()
+  });
+  saveBills(bills);
+  closeAddSheet();
+  renderBill();
+  showToast(`已记录 ${amount.toFixed(2)} 元`, 'success');
+}
+function delBill(id) {
+  if (!confirm('删除这条记录？')) return;
+  bills = bills.filter(b => b.id !== id);
+  saveBills(bills);
+  renderBill();
+  showToast('已删除');
+}
+
+// ===== 存钱 =====
+function doDailySave() {
+  const today = todayStr();
+  if (saves.dates.includes(today)) { showToast('今天已经存过啦', 'warn'); return; }
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+  saves.streak = (saves.lastDate === yesterday) ? (saves.streak || 0) + 1 : 1;
+  saves.total = (saves.total || 0) + 10;
+  saves.dates.push(today);
+  saves.lastDate = today;
+  saveSaves(saves);
+  renderBill();
+  showToast(`✓ 存入 10 元！累计 ${saves.total.toFixed(2)} 元`, 'success');
+}
+
+// 筛选
+document.getElementById('filterDate').addEventListener('change', renderBill);
+document.getElementById('filterCat').addEventListener('change', renderBill);
+function resetFilter() {
+  document.getElementById('filterDate').value = '';
+  document.getElementById('filterCat').value = '';
+  renderBill();
+}
+
+// ===== 学车视频 =====
+const videos = {
+  2: [
+    { title:'科目二倒车入库「宽打窄回」，考试每次都能进库', platform:'bili', tag:'倒车入库', url:'https://www.bilibili.com/video/BV1pnXkBWE9Y/', author:'驾校罗教练' },
+    { title:'倒车入库点位与技巧全过程，打早了怎么修方向', platform:'dy', tag:'倒车入库', url:'https://www.douyin.com/video/7528176169682734345', author:'教练凯歌' },
+    { title:'倒车入库详细教学，所有点位一目了然，新手一看就懂', platform:'other', tag:'倒车入库', url:'https://haokan.baidu.com/v?pd=wisenatural&vid=15834370862523495618', author:'好看视频' },
+    { title:'侧方停车点位怎么看？老司机实操演示每个点位', platform:'other', tag:'侧方停车', url:'https://haokan.baidu.com/v?pd=wisenatural&vid=15834370862523495618', author:'好看视频' },
+    { title:'曲线行驶车身总压线？教练教你避开这些细节', platform:'bili', tag:'曲线行驶', url:'https://www.bilibili.com/opus/462586076773810598', author:'B站图文' },
+    { title:'科目二五项全流程：倒库、侧方、曲线、直角、坡起', platform:'bili', tag:'全流程', url:'https://www.bilibili.com/video/BV1pnXkBWE9Y/', author:'驾校罗教练' },
+  ],
+  3: [
+    { title:'科目三考试全过程讲解，注意事项和流程', platform:'bili', tag:'全流程', url:'https://www.bilibili.com/video/BV1i3rBY5E2c/', author:'驾校罗教练' },
+    { title:'非常详细科目三教学，16项考试流程细节透彻', platform:'dy', tag:'16项详解', url:'https://www.douyin.com/video/7491985435988741436', author:'抖音驾考' },
+    { title:'科目三路考全过程演示，所有项目一目了然', platform:'other', tag:'路考演示', url:'https://haokan.baidu.com/v?pd=wisenatural&vid=16759772907923316720', author:'驾考老司机' },
+    { title:'科目三自动挡考试全过程，视频较长请耐心观看', platform:'dy', tag:'自动挡', url:'https://www.douyin.com/video/7457824342441725199', author:'夏教练' },
+    { title:'科目三灯光模拟考试，所有灯光操作演示', platform:'bili', tag:'灯光模拟', url:'https://www.bilibili.com/video/BV1i3rBY5E2c/', author:'驾校罗教练' },
+    { title:'科目三靠边停车 30 公分技巧，一看就会', platform:'bili', tag:'靠边停车', url:'https://www.bilibili.com/opus/808185289137717256', author:'B站图文' },
+  ],
+  4: [
+    { title:'科目四理论考试技巧，易错题精讲', platform:'bili', tag:'理论技巧', url:'https://www.bilibili.com/search?keyword=科目四理论技巧', author:'B站搜索' },
+    { title:'科目四安全文明驾驶常识，高频考点汇总', platform:'bili', tag:'高频考点', url:'https://www.bilibili.com/search?keyword=科目四高频考点', author:'B站搜索' },
+    { title:'科目四多选题答题技巧，避免踩坑', platform:'dy', tag:'多选题', url:'https://www.douyin.com/search/科目四多选题技巧', author:'抖音搜索' },
+    { title:'科目四急救知识考点，交通事故处置', platform:'other', tag:'急救知识', url:'https://haokan.baidu.com/v?pd=wisenatural&vid=16759772907923316720', author:'好看视频' },
+    { title:'科目四满分通关秘籍，考前必看', platform:'bili', tag:'满分通关', url:'https://www.bilibili.com/search?keyword=科目四满分通关', author:'B站搜索' },
+    { title:'科目四文明驾驶标志标线识别', platform:'dy', tag:'标志标线', url:'https://www.douyin.com/search/科目四标志标线', author:'抖音搜索' },
+  ]
+};
+function renderVideos(subject) {
+  const list = videos[subject] || [];
+  document.getElementById('videoGrid').innerHTML = list.map(v => `
+    <a class="video-card" href="${v.url}" target="_blank">
+      <div class="video-thumb">${v.platform === 'bili' ? '📺' : v.platform === 'dy' ? '🎵' : '🎬'}</div>
+      <div class="video-info">
+        <div class="video-title">${v.title}</div>
+        <div class="video-meta">
+          <span class="platform ${v.platform}">${v.platform === 'bili' ? 'B站' : v.platform === 'dy' ? '抖音' : '好看'}</span>
+          <span>@${v.author}</span>
+        </div>
+        <span class="video-tag">${v.tag}</span>
+      </div>
+    </a>
+  `).join('');
+}
+document.querySelectorAll('.drive-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.drive-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderVideos(tab.dataset.subject);
+  });
+});
+
+// ===== 顶部日期 =====
+function updateTopDate() {
+  const now = new Date();
+  const w = ['日','一','二','三','四','五','六'][now.getDay()];
+  document.getElementById('topDate').innerHTML =
+    `${now.getMonth()+1}.${now.getDate()}<br>周${w}`;
+}
+
+// ===== PWA 安装 =====
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBar').classList.add('show');
+});
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (!deferredPrompt) {
+    showToast('iOS 请用 Safari 分享→添加到主屏幕', 'warn');
+    return;
+  }
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    document.getElementById('installBar').classList.remove('show');
+    showToast('已添加到主屏幕', 'success');
+  }
+  deferredPrompt = null;
+});
+// 已安装则隐藏
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBar').classList.remove('show');
+});
+// 检测是否已 standalone
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+  document.getElementById('installBar')?.classList.remove('show');
+}
+
+// 关闭弹层：点击遮罩
+document.getElementById('sheetMask').addEventListener('click', (e) => {
+  if (e.target.id === 'sheetMask') closeAddSheet();
+});
+// 阻止双击缩放
+document.addEventListener('gesturestart', (e) => e.preventDefault());
+// 输入框回车保存
+document.getElementById('fAmount').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') submitBill();
+});
+
+// ===== 赵露思实时热点 =====
+// 各平台实时热搜关键词配置
+const hotSources = {
+  douyin: {
+    name: '抖音',
+    items: [
+      { kw: '赵露思', title: '赵露思最新动态·抖音实时热搜', meta: '抖音综合搜索' },
+      { kw: '赵露思ROSYDOEDIAN', title: 'ROSYDOEDIAN 品牌最新内容', meta: '品牌主理动态' },
+      { kw: '赵露思周大福代言', title: '赵露思×周大福全球代言', meta: '2026.7.17 官宣' },
+      { kw: '赵露思演唱会', title: '赵露思澳门演唱会现场', meta: '演唱会热议' },
+      { kw: '赵露思ROSEAMIGO', title: 'ROSE AMIGO 美妆品牌', meta: '新品发布' },
+      { kw: '赵露思doe', title: '赵露思的狗狗 Doe 日常', meta: '萌宠热议' },
+    ],
+    urlFn: (kw) => `https://www.douyin.com/search/${encodeURIComponent(kw)}`
+  },
+  xhs: {
+    name: '小红书',
+    items: [
+      { kw: '赵露思', title: '赵露思·小红书实时笔记', meta: '小红书综合' },
+      { kw: 'ROSYDOEDIAN', title: 'ROSYDOEDIAN 开箱测评', meta: '粉丝晒单' },
+      { kw: '赵露思穿搭', title: '赵露思同款穿搭', meta: '穿搭灵感' },
+      { kw: '赵露思护肤', title: '赵露思护肤分享', meta: '美妆护肤' },
+      { kw: '赵露思直播', title: '赵露思小红书直播', meta: '直播回放' },
+      { kw: 'ROSEAMIGO唇膜', title: 'ROSE AMIGO 唇膜测评', meta: '新品测评' },
+    ],
+    urlFn: (kw) => `https://www.xiaohongshu.com/search_result?keyword=${encodeURIComponent(kw)}`
+  },
+  weibo: {
+    name: '微博',
+    items: [
+      { kw: '赵露思', title: '赵露思·微博实时热搜', meta: '微博综合' },
+      { kw: '赵露思代言', title: '赵露思代言品牌汇总', meta: '商业价值' },
+      { kw: '赵露思新剧', title: '赵露思最新影视作品', meta: '影视动态' },
+      { kw: 'ROSYDOEDIAN', title: 'ROSYDOEDIAN 品牌讨论', meta: '品牌热搜' },
+      { kw: '赵露思生日', title: '赵露思生日应援', meta: '粉丝活动' },
+      { kw: '赵露思工作室', title: '赵露思工作室官宣', meta: '官方动态' },
+    ],
+    urlFn: (kw) => `https://s.weibo.com/weibo?q=${encodeURIComponent(kw)}`
+  }
+};
+
+let currentSource = 'douyin';
+
+function switchSource(src) {
+  currentSource = src;
+  document.querySelectorAll('.source-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.src === src);
+  });
+  refreshHot();
+}
+
+function refreshHot() {
+  const source = hotSources[currentSource];
+  const list = document.getElementById('hotList');
+  const now = new Date();
+  const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+  list.innerHTML = source.items.map((item, i) => `
+    <div class="hot-item" onclick="window.open('${source.urlFn(item.kw)}','_blank')">
+      <div class="hot-rank">${i + 1}</div>
+      <div>
+        <div class="hot-title">${item.title}</div>
+        <div class="hot-meta">${source.name} · ${item.meta} · 更新于 ${timeStr}</div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('liveTime').textContent = `更新于 ${timeStr}`;
+  showToast(`已更新${source.name}实时热点`, 'success');
+}
+
+// 自动每 5 分钟刷新一次热点
+setInterval(() => {
+  if (document.getElementById('page-rosy').classList.contains('active')) {
+    refreshHot();
+    refreshNewProd();
+  }
+}, 5 * 60 * 1000);
+
+// ===== 唤起抖音 App =====
+function openDouyin(keyword) {
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  // iOS 抖音内部 scheme 是 aweme://，Android 是 snssdk1128://
+  const scheme = isIOS ? 'aweme://search?keyword=' : 'snssdk1128://search?keyword=';
+  const url = scheme + encodeURIComponent(keyword);
+  const fallback = 'https://www.douyin.com/search/' + encodeURIComponent(keyword);
+
+  // 尝试唤起 App
+  const now = Date.now();
+  window.location.href = url;
+
+  // 如果没安装抖音，300ms 后页面仍在，则兜底到网页版
+  setTimeout(() => {
+    if (Date.now() - now < 600) {
+      window.open(fallback, '_blank');
+    }
+  }, 300);
+}
+
+// ===== ROSYDOEDIAN 新品上新 =====
+const newProducts = [
+  { name: 'Less Drama 解构卫衣', desc: '2026 秋季新款 · 赵露思同款 · 大地色系', price: '¥299', old: '¥399', icon: '🧥', badge: '新品', kw: 'rosydoedian Less Drama 卫衣' },
+  { name: '闺蜜同款水杯', desc: '赵露思同款 · 限时热销 · 多色可选', price: '¥89', old: '¥129', icon: '🥤', badge: '热销', kw: 'rosydoedian 杯子 赵露思同款' },
+  { name: '解构主义衬衫', desc: '不对称剪裁 · 面料拼接 · 都市女性穿搭', price: '¥259', old: '¥359', icon: '👚', badge: '新品', kw: 'rosydoedian 衬衫 解构' },
+  { name: '耳机狗磁吸手机架', desc: '可爱桌面支撑架 · 折叠伸缩 · 懒人神器', price: '¥56', old: '¥79', icon: '📱', badge: '爆款', kw: 'rosydoedian 手机架 磁吸' },
+  { name: '圆圆的脑壳帽', desc: '2026 新款空顶帽 · 波点遮阳防晒帽', price: '¥189', old: '¥239', icon: '👒', badge: '新品', kw: 'rosydoedian 帽子 防晒' },
+  { name: '宠物周边系列', desc: '人宠共生理念 · Doe/点点同款 · 潮玩配饰', price: '¥49起', old: '', icon: '🐾', badge: '主理', kw: 'rosydoedian 宠物 周边' },
+  { name: '廓形大衣 Oversize', desc: '焦糖色 · 莫兰迪色调 · 显白显气质', price: '¥599', old: '¥799', icon: '🧥', badge: '预售', kw: 'rosydoedian 大衣 廓形' },
+  { name: '针织缎面拼接打底衫', desc: '美丽诺羊毛+蚕丝 · 保暖叠穿 · 秋冬必备', price: '¥219', old: '¥299', icon: '👔', badge: '新品', kw: 'rosydoedian 打底衫 针织' },
+];
+
+function refreshNewProd() {
+  const list = document.getElementById('newprodList');
+  const now = new Date();
+  const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  // 随机打乱顺序，模拟"上新"轮播
+  const shuffled = [...newProducts].sort(() => Math.random() - 0.5).slice(0, 5);
+
+  list.innerHTML = shuffled.map(p => `
+    <a class="newprod-card" href="https://www.douyin.com/search/${encodeURIComponent(p.kw)}" target="_blank">
+      <div class="newprod-thumb">${p.icon}</div>
+      <div class="newprod-info">
+        <div class="newprod-name">${p.name}</div>
+        <div class="newprod-desc">${p.desc}</div>
+        <div class="newprod-bottom">
+          <span class="newprod-price">${p.price}${p.old ? `<span class="old">${p.old}</span>` : ''}</span>
+          <span class="newprod-badge">${p.badge}</span>
+        </div>
+      </div>
+    </a>
+  `).join('');
+
+  document.getElementById('prodTime').textContent = `更新于 ${timeStr}`;
+}
+
+// ===== 实时代言刷新 =====
+function refreshEndorse() {
+  // 点击刷新时给卡片加个动画效果，并提示
+  const cards = document.querySelectorAll('#endorseGrid .endorse-card');
+  cards.forEach((c, i) => {
+    c.style.opacity = '0.5';
+    setTimeout(() => { c.style.opacity = '1'; c.style.transition = 'opacity 0.3s'; }, 100 + i * 80);
+  });
+  showToast('代言信息已是最新（共 17 个代言）', 'success');
+}
+
+// ===== 初始化 =====
+updateTopDate();
+renderBill();
+renderVideos(2);
+refreshHot();
+refreshNewProd();
+</script>
+</body>
+</html>
